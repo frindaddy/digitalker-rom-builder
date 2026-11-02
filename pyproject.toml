@@ -1,0 +1,29 @@
+[project]
+name = "dkrom"
+version = "0.1.0"
+description = "Build National Semiconductor MM54104 Digitalker speech ROMs from WAV/MP3 recordings"
+authors = [
+    { name = "frindaddy", email = "58454817+frindaddy@users.noreply.github.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=2.4.6",
+    "scipy>=1.17.1",
+    "soundfile>=0.14.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.8.12,<0.9.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]
+
+[project.scripts]
+dkrom = "dkrom.cli:main"
+
+[tool.pytest.ini_options]
+addopts = "-p no:cacheprovider"
+testpaths = ["tests"]

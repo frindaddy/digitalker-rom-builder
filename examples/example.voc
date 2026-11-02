@@ -1,0 +1,8 @@
+# Example dkrom manifest. Put your recordings next to this file and run:
+#   uv run dkrom build examples/example.voc --wav-dir examples/preview
+rom_size: 16K
+quality: normal
+
+1: hello.wav
+2: goodbye.mp3
+3: hello.wav sil200 goodbye.mp3 | hello goodbye
