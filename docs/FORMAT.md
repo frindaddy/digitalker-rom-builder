@@ -5,7 +5,7 @@ codec description follows MAME's `src/devices/sound/digitalk.cpp`, written by
 Olivier Galibert from chip analysis by Kevin Horton and Lord Nightmare. The
 format has been checked against the DT1052 and DVSS ROMs, and against real-chip
 recordings in the
-[Digitalker audio archive](https://github.com/frindaddy/digitalker-audio-archive).
+[Digitalker Audio Archive](https://github.com/frindaddy/digitalker-audio-archive).
 
 ## ROM layout
 
