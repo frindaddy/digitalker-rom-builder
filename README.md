@@ -1,12 +1,12 @@
 # Digitalker ROM Tools
 
-`dkrom` builds speech ROMs for the National Semiconductor **MM54104 Digitalker**
-from WAV or MP3 recordings. National never released its audio encoder, and the
-Digitalker Voice Selection Software (DVSS) could only assemble ROMs from its
+`dkrom` builds speech ROMs for the National Semiconductor MM54104 Digitalker speech synthesis system
+from WAV or MP3 recordings. National Samiconductor never released its audio encoder software, and the
+Digitalker Voice Selection Software (DVSS) can only assemble ROMs from its
 stock vocabulary. This tool lets you encode your own recordings instead.
 
 The output is a 2–16 KiB ROM image that you can program into an EPROM or load
-on a [Digichiver](https://github.com/frindaddy/digichiver) board. A matching
+onto a [Digichiver](https://github.com/frindaddy/digichiver) board. A matching
 Digichiver dictionary JSON file is written alongside the image.
 
 ## Install
