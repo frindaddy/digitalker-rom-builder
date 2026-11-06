@@ -1,13 +1,28 @@
 # Digitalker ROM Tools
 
-`dkrom` builds speech ROMs for the National Semiconductor MM54104 Digitalker speech synthesis system
-from WAV or MP3 recordings. National Samiconductor never released its audio encoder software, and the
-Digitalker Voice Selection Software (DVSS) can only assemble ROMs from its
-stock vocabulary. This tool lets you encode your own recordings instead.
+This repository contains tools for working with speech ROMs for the National
+Semiconductor MM54104 Digitalker. Use them to build a ROM from your own
+recordings, inspect or decode an existing ROM, or explore the original DVSS
+speech archive and its CP/M disk images.
 
-The output is a 2–16 KiB ROM image that you can program into an EPROM or load
-onto a [Digichiver](https://github.com/frindaddy/digichiver) board. A matching
-Digichiver dictionary JSON file is written alongside the image.
+The main command-line program is `dkrom`. Supporting tools extract and decode
+National's STDARC archive and compare recordings. Together, they cover both
+creating new ROMs and understanding the ROMs and speech data that already
+exist.
+
+## Tools
+
+| Tool | What it does |
+|---|---|
+| `dkrom build` | Encode WAV or MP3 recordings into a Digitalker ROM and dictionary. |
+| `dkrom inspect` | List a ROM's messages, instructions, durations, and space usage. |
+| `dkrom decode` | Render ROM messages to WAV files. |
+| `dkrom preview` | Encode one recording and write a WAV preview of how the chip would say it. |
+| `tools/cpm_extract.py` | Extract files from the DVSS CP/M disk images. |
+| `tools/stdarc.py` | Read National's STDARC word archive, report encoding statistics, and export words as WAV or ROM files. |
+| `tools/evaluate.py` | Compare recordings using mel-cepstral distance. |
+
+The ROM and archive formats are described in [docs/FORMAT.md](docs/FORMAT.md).
 
 ## Install
 
@@ -55,24 +70,51 @@ uv run dkrom build vocab.voc -o vocab.bin --wav-dir preview/
 
 This writes `vocab.bin` and `vocab_dictionary.json`. With `--wav-dir`, it also
 writes a WAV preview of each message, rendered by a bit-exact model of the
-chip.
+chip. The output is a 2–16 KiB ROM image that you can program into an EPROM
+or load on a [Digichiver](https://github.com/frindaddy/digichiver) board.
 
 If the ROM does not have enough room, the build steps down through the quality
 presets until all messages fit. Use `--no-auto-fit` to turn this off and get
 an error instead. The error includes the encoded size of each message.
 
-## Other commands
+## Inspect and decode ROMs
+
+`inspect` lists message durations, instruction counts, and remaining ROM
+space. Add `-v` to see the individual instructions. `decode` writes messages
+as WAV files; a Digichiver dictionary can be used to name the files. Both
+commands accept a single ROM image or two files for an 8K + 8K pair.
 
 ```sh
-uv run dkrom preview clip.wav                   # hear one clip as the chip would say it
-uv run dkrom inspect rom.bin [--dictionary d.json] [-v]
-uv run dkrom decode rom.bin -o wavs/ [--dictionary d.json] [--filter]
-uv run dkrom decode lo.bin hi.bin -o wavs/      # 8K + 8K pair
+uv run dkrom inspect rom.bin [--dictionary dictionary.json] [-v]
+uv run dkrom decode rom.bin -o wavs/ [--dictionary dictionary.json] [--filter]
+uv run dkrom decode lo.bin hi.bin -o wavs/
 ```
 
-`preview` plays a recording as the chip would encode it. `inspect` shows
-information about a ROM, and `decode` writes its messages as WAV files.
-`--filter` applies the DT1050 datasheet output filter (194 Hz–7.2 kHz).
+Use `--index` with `decode` to render only selected message numbers. `--filter`
+applies the DT1050 datasheet output filter (194 Hz–7.2 kHz).
+
+## Preview a recording
+
+`preview` encodes one clip and writes a WAV file of how the chip would play
+it:
+
+```sh
+uv run dkrom preview clip.wav
+```
+
+## Explore the DVSS archive
+
+The helper tools work with the original Digitalker Voice Selection Software
+(DVSS) archive. First extract the files from a CP/M disk image, then point
+`stdarc.py` at the directory containing `STDARC.IDX` and `STDARC.DAT`:
+
+```sh
+python tools/cpm_extract.py nsc_digitalker_archive_disk.img extracted/
+python tools/stdarc.py extracted/ --stats
+```
+
+`stdarc.py` can also export archived words as WAV files or build one-message
+ROM images. Run `python tools/stdarc.py --help` for its options.
 
 ## Getting good results
 
@@ -95,7 +137,7 @@ information about a ROM, and `decode` writes its messages as WAV files.
   | low | 3 | 4 | ~650 |
   | tiny | 4 | 4 (13 kHz) | ~470 |
 
-## How it works
+## How ROM encoding works
 
 `dkrom` finds the pitch with YIN below 1 kHz, then splits each clip into
 voiced, unvoiced, and silent parts. For voiced audio, it marks each pitch
@@ -109,14 +151,8 @@ slides. Unvoiced audio is stored as mode-3 noise blocks, and silence is stored
 as length-only instructions. The ROM contains the pointer table, instructions,
 and speech data; identical speech data is stored once.
 
-See [docs/FORMAT.md](docs/FORMAT.md) for details about the ROM and DVSS
-STDARC archive formats.
+## Tests
 
-## Reference tools
-
-- `tools/cpm_extract.py` extracts files from the DVSS CP/M disk images on
-  bitsavers.
-- `tools/stdarc.py` decodes National's STDARC word archive. It can also report
-  statistics or write WAV files and ROM images.
-- `tools/evaluate.py` calculates mel-cepstral distance between recordings
-  for tuning.
+```sh
+uv run pytest
+```
